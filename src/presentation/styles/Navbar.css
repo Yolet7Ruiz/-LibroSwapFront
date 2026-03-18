@@ -1,0 +1,17 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 50px;
+  background: white;
+}
+.navbar-logo { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 1.2rem; }
+.navbar-actions { display: flex; align-items: center; gap: 20px; }
+.btn-login {
+  background: #8e7dff; /* El moradito de tu Figma */
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+} 

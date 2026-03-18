@@ -1,0 +1,21 @@
+:root {
+  --primary-purple: #6c5ce7; /* El morado de tu Figma */
+  --dark-blue: #0f0c29;      /* El azul oscuro del fondo */
+  --white: #ffffff;
+  --gray-light: #f1f2f6;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--gray-light);
+}
+
+.libros-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 40px; 
+  padding: 40px 0;
+  justify-items: center; 
+  padding-bottom: 120px;
+}
