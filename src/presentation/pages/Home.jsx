@@ -1,53 +1,165 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Navbar } from "../components/Navbar";
 import { Hero } from "../components/Hero";
 import { LibroCard } from "../components/LibroCard"; 
 import { BottomNav } from "../components/BottomNav";
 import { Login } from "../components/Login"; 
+import { PublicarLibros } from "../components/PublicarLibros"; 
+import { PerfilUsuario } from "../components/PerfilUsuario";
 
 export const Home = () => {
-  // Estado para abrir/cerrar el Login
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [activeView, setActiveView] = useState('inicio');
+  const [usuarioActual, setUsuarioActual] = useState(null);
+  const [librosPublicados, setLibrosPublicados] = useState([]);
+  const [librosDisponibles, setLibrosDisponibles] = useState([
+    {
+      id: 1,
+      titulo: "El Principito",
+      autor: "Antoine de Saint-Exupéry",
+      categoria: "Novela",
+      descripcion: "Un clásico de la literatura francesa que invita a reflexionar sobre la vida y la amistad.",
+      imagen: "https://images.cdn3.buscalibre.com/fit-in/360x360/86/ea/86eaf73db9d5f84011b66ea43c70e642.jpg",
+      estado: "Disponible"
+    },
+    {
+      id: 2,
+      titulo: "Proyecto Karón",
+      autor: "Autor Ejemplo",
+      categoria: "Ficción",
+      descripcion: "Una historia fascinante sobre ciencia ficción y aventuras espaciales.",
+      imagen: "https://via.placeholder.com/150",
+      estado: "Disponible"
+    },
+    {
+      id: 3,
+      titulo: "Cien años de soledad",
+      autor: "Gabriel García Márquez",
+      categoria: "Literatura",
+      descripcion: "Obra maestra del realismo mágico, historia de la familia Buendía.",
+      imagen: "https://images.cdn3.buscalibre.com/fit-in/360x360/77/1e/771e19bc67e9c5e99bd71395cb0c791a.jpg",
+      estado: "Disponible"
+    }
+  ]);
+
+  useEffect(() => {
+    // Función para cargar datos de forma segura
+    const cargarDatos = () => {
+      // Cargar usuario guardado con try-catch
+      const usuarioGuardado = localStorage.getItem("usuarioActual");
+      if (usuarioGuardado) {
+        try {
+          const usuario = JSON.parse(usuarioGuardado);
+          setUsuarioActual(usuario);
+        } catch (error) {
+          console.error("Error al parsear usuario:", error);
+          setUsuarioActual(null);
+          localStorage.removeItem("usuarioActual"); // Limpiar datos corruptos
+        }
+      }
+
+      // Cargar libros publicados con try-catch
+      const librosGuardados = localStorage.getItem("librosPublicados");
+      if (librosGuardados) {
+        try {
+          const libros = JSON.parse(librosGuardados);
+          setLibrosPublicados(libros);
+          
+          // Agregar libros publicados a disponibles si no están ya
+          setLibrosDisponibles(prev => {
+            const nuevosLibros = libros.filter(libro =>
+              !prev.some(p => p.id === libro.id)
+            );
+            return [...nuevosLibros, ...prev];
+          });
+        } catch (error) {
+          console.error("Error al parsear libros:", error);
+          localStorage.removeItem("librosPublicados"); // Limpiar datos corruptos
+        }
+      }
+    };
+    
+    cargarDatos();
+  }, []); // Solo se ejecuta una vez al montar el componente
+
+  const handlePublicarLibro = (nuevoLibro) => {
+    const librosActualizados = [nuevoLibro, ...librosPublicados];
+    setLibrosPublicados(librosActualizados);
+    localStorage.setItem("librosPublicados", JSON.stringify(librosActualizados));
+    
+    setLibrosDisponibles(prev => [{
+      ...nuevoLibro,
+      estado: "Disponible"
+    }, ...prev]);
+    
+    setTimeout(() => {
+      setActiveView("inicio");
+    }, 1500);
+  };
+
+  const handleActualizarUsuario = (usuarioActualizado) => {
+    setUsuarioActual(usuarioActualizado);
+    localStorage.setItem("usuarioActual", JSON.stringify(usuarioActualizado));
+  };
+
+  const handleLogin = (usuario) => {
+    setUsuarioActual(usuario);
+    localStorage.setItem("usuarioActual", JSON.stringify(usuario));
+    setIsLoginOpen(false);
+  };
 
   return (
-    <div className="home-page" style={{ position: 'relative', minHeight: '100vh' }}>
+    <div className="home-page" style={{ position: 'relative', minHeight: '100vh', background: '#f1f2f6' }}>
+      <Navbar 
+        onOpenLogin={() => setIsLoginOpen(true)} 
+        usuarioActual={usuarioActual}
+      />
       
-      {/* Pasamos la función para ABRIR el login al Navbar */}
-      <Navbar onOpenLogin={() => setIsLoginOpen(true)} />
-      
-      <Hero />
+      {activeView === 'inicio' && <Hero />}
       
       <main style={{ padding: '20px 50px', paddingBottom: '120px' }}>
-        <h2>Libros Disponibles</h2>
-        <hr style={{ borderColor: '#8e7dff', opacity: '0.3', marginBottom: '30px' }} />
-        
-        <div className="libros-grid">
-          <LibroCard 
-            titulo="El Principito" 
-            categoria="Novela" 
-            descripcion="El principito es una novela corta y la obra más famosa..." 
-            imagen="https://relaxmoment.org/wp-content/uploads/2023/05/El-Principito.jpg" 
+        {activeView === 'inicio' && (
+          <div>
+            <h2 style={{ marginBottom: '20px', color: '#1a237e' }}>📚 Libros Disponibles</h2>
+            <div className="libros-grid">
+              {librosDisponibles.map(libro => (
+                <LibroCard 
+                  key={libro.id}
+                  titulo={libro.titulo}
+                  categoria={libro.categoria}
+                  descripcion={libro.descripcion}
+                  imagen={libro.imagen}
+                  autor={libro.autor}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeView === 'publicar' && (
+          <PublicarLibros 
+            onPublicarLibro={handlePublicarLibro}
+            usuarioActual={usuarioActual}
           />
-          <LibroCard 
-            titulo="Los Juegos del Hambre" 
-            categoria="Acción/Aventura" 
-            descripcion="El primer libro de la trilogía homónima escrita por Suzanne Collins." 
-            imagen="https://m.media-amazon.com/images/I/61I24wOsn8L._AC_UF1000,1000_QL80_.jpg" 
+        )}
+
+        {activeView === 'perfil' && (
+          <PerfilUsuario 
+            usuarioActual={usuarioActual}
+            onActualizarUsuario={handleActualizarUsuario}
+            librosPublicados={librosPublicados}
           />
-          <LibroCard 
-            titulo="Proyecto Karón" 
-            categoria="Ficción" 
-            descripcion="Alaxi Dalem está acostumbrado a una vida tranquila..." 
-            imagen="https://cdn.wallapop.com/images/10420/kb/d3/__/c10420p1228410706/i6278371563.jpg?pictureSize=W640"
-          />
-        </div>
+        )}
       </main>
 
-      <BottomNav />
+      <BottomNav onNavigate={setActiveView} currentView={activeView} />
 
-      {/* Si el interruptor es true, mostramos el Login y le pasamos la función para CERRAR */}
-      {isLoginOpen && <Login onClose={() => setIsLoginOpen(false)} />}
-      
+      {isLoginOpen && (
+        <Login 
+          onClose={() => setIsLoginOpen(false)} 
+          onLogin={handleLogin}
+        />
+      )}
     </div>
   );
 };

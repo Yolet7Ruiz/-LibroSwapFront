@@ -1,7 +1,6 @@
 import "../styles/Navbar.css";
 
-// Recibimos la prop onOpenLogin
-export const Navbar = ({ onOpenLogin }) => {
+export const Navbar = ({ onOpenLogin, usuarioActual }) => {
   return (
     <nav className="navbar">
       <div className="navbar-logo">
@@ -9,11 +8,18 @@ export const Navbar = ({ onOpenLogin }) => {
         <span>LibroSwap</span>
       </div>
       <div className="navbar-actions">
-        <div className="user-icon">👤</div>
-        {/* Al darle click, ejecutamos la función que viene del Home */}
-        <button className="btn-login" onClick={onOpenLogin}>
-            Inicia Sesion
-        </button>
+        {usuarioActual ? (
+          <>
+            <div className="user-icon" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>👤</span>
+              <span style={{ fontWeight: 'bold' }}>{usuarioActual.nombre}</span>
+            </div>
+          </>
+        ) : (
+          <button className="btn-login" onClick={onOpenLogin}>
+            Iniciar Sesión
+          </button>
+        )}
       </div>
     </nav>
   );
